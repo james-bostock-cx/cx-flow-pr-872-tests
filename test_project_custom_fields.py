@@ -53,10 +53,10 @@ def run_cxflow(cxflow_version, config, project_name, extra_args=[]):
     return proc.returncode
 
 
-class TestCustomJiraSummaries(unittest.TestCase):
+class TestProjectCustomFields(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
-        super(TestCustomJiraSummaries, self).__init__(*args, **kwargs)
+        super(TestProjectCustomFields, self).__init__(*args, **kwargs)
         self.config = Config('config.yml')
         self.base_cx_flow_config = {
             'cx-flow': {
