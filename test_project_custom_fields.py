@@ -120,30 +120,22 @@ class TestCustomJiraSummaries(unittest.TestCase):
             value = self.random_string(10)
             expected[custom_field] = value
             extra_args.append(f'--project-custom-field={custom_field}:{value}')
-        self.assertEqual(0, run_cxflow(self.config.data['cx-flow']['version'],
-                                       self.cx_flow_config,
-                                       project_name,
-                                       extra_args))
-        self.project_id = self.get_project(project_name)
-        self.assertIsNotNone(self.project_id)
-        project = self.projects_api.get_project_details_by_id(self.project_id)
-        actual = {}
-        for custom_field in project.custom_fields:
-            actual[custom_field.name] = custom_field.value
-        self.assertEqual(expected, actual)
+
+        self.common(project_name, extra_args, expected)
 
     def test_config_as_code(self):
 
         project_name = self.random_string(10)
         project_id = self.get_project(project_name)
         self.assertIsNone(project_id)
+        extra_args = ['--f=.', '--app=App']
+        expected = {}
         config = {
             'version': 1.0,
             'customFields': {
             }
         }
         tmp = []
-        expected = {}
         for custom_field in self.config.data['project-custom-fields']:
             value = self.random_string(10)
             expected[custom_field] = value
@@ -152,10 +144,14 @@ class TestCustomJiraSummaries(unittest.TestCase):
         with open('cx.config', 'w') as f:
             json.dump(config, f)
 
+        self.common(project_name, extra_args, expected)
+
+    def common(self, project_name, extra_args, expected):
+
         self.assertEqual(0, run_cxflow(self.config.data['cx-flow']['version'],
                                        self.cx_flow_config,
                                        project_name,
-                                       ['--f=.', '--app=App']))
+                                       extra_args))
         self.project_id = self.get_project(project_name)
         self.assertIsNotNone(self.project_id)
         project = self.projects_api.get_project_details_by_id(self.project_id)
