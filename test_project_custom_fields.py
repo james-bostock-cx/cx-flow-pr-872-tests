@@ -7,6 +7,7 @@ import subprocess
 import unittest
 import yaml
 
+from CheckmarxPythonSDK.CxRestAPISDK import CustomFieldsAPI
 from CheckmarxPythonSDK.CxRestAPISDK import ProjectsAPI
 
 class Config:
@@ -91,7 +92,10 @@ class TestCustomJiraSummaries(unittest.TestCase):
             }
         }
 
+        self.custom_fields_api = CustomFieldsAPI()
         self.projects_api = ProjectsAPI()
+
+        self.custom_fields = self.custom_fields_api.get_all_custom_fields()
 
     def setUp(self):
 
@@ -116,10 +120,10 @@ class TestCustomJiraSummaries(unittest.TestCase):
         self.assertIsNone(project_id)
         extra_args = ['--f=.', '--app=App']
         expected = {}
-        for custom_field in self.config.data['project-custom-fields']:
+        for custom_field in self.custom_fields:
             value = self.random_string(10)
-            expected[custom_field] = value
-            extra_args.append(f'--project-custom-field={custom_field}:{value}')
+            expected[custom_field.name] = value
+            extra_args.append(f'--project-custom-field={custom_field.name}:{value}')
 
         self.common(project_name, extra_args, expected)
 
@@ -136,10 +140,10 @@ class TestCustomJiraSummaries(unittest.TestCase):
             }
         }
         tmp = []
-        for custom_field in self.config.data['project-custom-fields']:
+        for custom_field in self.custom_fields:
             value = self.random_string(10)
-            expected[custom_field] = value
-            config['customFields'][custom_field] = value
+            expected[custom_field.name] = value
+            config['customFields'][custom_field.name] = value
 
         with open('cx.config', 'w') as f:
             json.dump(config, f)
