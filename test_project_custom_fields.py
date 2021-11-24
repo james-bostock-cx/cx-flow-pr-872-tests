@@ -186,7 +186,7 @@ class TestProjectCustomFields(unittest.TestCase):
         actual = {}
         for custom_field in project.custom_fields:
             actual[custom_field.name] = custom_field.value
-        print(f'actual: {actuoal}')
+        print(f'actual: {actual}')
         self.assertEqual(expected, actual)
 
     def create_project(self, project_name, team_name):
