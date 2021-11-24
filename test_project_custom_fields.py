@@ -9,6 +9,8 @@ import yaml
 
 from CheckmarxPythonSDK.CxRestAPISDK import CustomFieldsAPI
 from CheckmarxPythonSDK.CxRestAPISDK import ProjectsAPI
+from CheckmarxPythonSDK.CxRestAPISDK import TeamAPI
+from CheckmarxPythonSDK.CxRestAPISDK.sast.projects.dto.customFields.CxCustomField import CxCustomField
 
 class Config:
 
@@ -94,6 +96,7 @@ class TestProjectCustomFields(unittest.TestCase):
 
         self.custom_fields_api = CustomFieldsAPI()
         self.projects_api = ProjectsAPI()
+        self.team_api = TeamAPI()
 
         self.custom_fields = self.custom_fields_api.get_all_custom_fields()
 
@@ -127,6 +130,30 @@ class TestProjectCustomFields(unittest.TestCase):
 
         self.common(project_name, extra_args, expected)
 
+    def test_cmdline_project_exists(self):
+
+        project_name = self.random_string(10)
+        project_id, expected = self.create_project(project_name, '/CxServer')
+        extra_args = ['--f=.', '--app=App']
+        for custom_field in self.custom_fields:
+            value = self.random_string(10)
+            extra_args.append(f'--project-custom-field={custom_field.name}:{value}')
+
+        self.common(project_name, extra_args, expected)
+
+    def test_cmdline_project_exists_settings_override(self):
+
+        project_name = self.random_string(10)
+        project_id, junk = self.create_project(project_name, '/CxServer')
+        extra_args = ['--f=.', '--app=App']
+        expected = {}
+        for custom_field in self.custom_fields:
+            value = self.random_string(10)
+            expected[custom_field.name] = value
+            extra_args.append(f'--project-custom-field={custom_field.name}:{value}')
+
+        self.common(project_name, extra_args, expected, True)
+
     def test_config_as_code(self):
 
         project_name = self.random_string(10)
@@ -150,8 +177,12 @@ class TestProjectCustomFields(unittest.TestCase):
 
         self.common(project_name, extra_args, expected)
 
-    def common(self, project_name, extra_args, expected):
+    def common(self, project_name, extra_args, expected, settings_override=False):
 
+        if settings_override:
+            extra_args.append('--checkmarx.settings-override=true')
+
+        print(f'expected: {expected}')
         self.assertEqual(0, run_cxflow(self.config.data['cx-flow']['version'],
                                        self.cx_flow_config,
                                        project_name,
@@ -163,6 +194,25 @@ class TestProjectCustomFields(unittest.TestCase):
         for custom_field in project.custom_fields:
             actual[custom_field.name] = custom_field.value
         self.assertEqual(expected, actual)
+
+    def create_project(self, project_name, team_name):
+
+        team_id = self.team_api.get_team_id_by_team_full_name(team_name)
+        resp = self.projects_api.create_project_with_default_configuration(project_name, team_id)
+        project_id = resp.id
+        custom_fields = []
+        custom_field_map = {}
+        for custom_field in self.custom_fields:
+            value = self.random_string(10)
+            custom_fields.append(CxCustomField(custom_field.id,
+                                               custom_field.name,
+                                               value))
+            custom_field_map[custom_field.name] = value
+        resp = self.projects_api.update_project_by_id(project_id,
+                                                      project_name,
+                                                      team_id,
+                                                      custom_fields=custom_fields)
+        return (project_id, custom_field_map)
 
     def compare_issues(self, expected, actual):
 

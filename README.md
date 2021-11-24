@@ -16,6 +16,24 @@ custom fields are set to the provided values.
 - Test using command line options
 - Test using config-as-code
 
+## Project Exists and Override Specified
+
+CxFlow is launched specifying a project that already exists and that
+the existing project configuration shoud be overridden. The
+expectation is that the project's custom fields are set to the
+provided values.
+
+- Test using command line options
+
+## Project Exists and Override Specified
+
+CxFlow is launched specifying a project that already exists but it is
+not specified that the existing project configuration shoud be
+overridden. The expectation is that the project's custom fields are
+not set to the provided values.
+
+- Test using command line options
+
 # Configuration
 
 The test framework expects there to be a file names `config.yml` in
