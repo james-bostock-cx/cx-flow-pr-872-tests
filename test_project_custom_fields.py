@@ -186,10 +186,12 @@ class TestProjectCustomFields(unittest.TestCase):
         actual = {}
         for custom_field in project.custom_fields:
             actual[custom_field.name] = custom_field.value
+        print(f'actual: {actuoal}')
         self.assertEqual(expected, actual)
 
     def create_project(self, project_name, team_name):
 
+        print(f'Creating project {project_name} (under {team_name})')
         team_id = self.team_api.get_team_id_by_team_full_name(team_name)
         resp = self.projects_api.create_project_with_default_configuration(project_name, team_id)
         project_id = resp.id
@@ -201,6 +203,7 @@ class TestProjectCustomFields(unittest.TestCase):
                                                custom_field.name,
                                                value))
             custom_field_map[custom_field.name] = value
+        print(f'Setting project custom fields to {custom_field_map}')
         resp = self.projects_api.update_project_by_id(project_id,
                                                       project_name,
                                                       team_id,
