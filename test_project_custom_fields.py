@@ -188,6 +188,7 @@ class TestProjectCustomFields(unittest.TestCase):
 
         with open('cx.config', 'w') as f:
             json.dump(config, f)
+        print(f'cx.config: {json.dumps(config, indent="  ")}')
 
         self.common(project_name, extra_args, expected, override_settings)
 
