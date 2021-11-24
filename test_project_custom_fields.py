@@ -19,6 +19,9 @@ class Config:
         with open(filename, 'r') as f:
             self.data = yaml.load(f, Loader=yaml.Loader)
 
+    def print_cx_flow_output(self):
+
+        return self.data.get('print-cx-flow-output', False)
 
     def update_config(self, config):
 
@@ -29,7 +32,7 @@ class Config:
         return config
 
 
-def run_cxflow(cxflow_version, config, project_name, extra_args=[]):
+def run_cxflow(cxflow_version, config, project_name, extra_args=[], print_output=False):
     """Runs CxFlow"""
 
     print(f'Running CxFlow version {cxflow_version}')
@@ -50,8 +53,9 @@ def run_cxflow(cxflow_version, config, project_name, extra_args=[]):
 
     print(f'Command: {" ".join(args)}')
     proc = subprocess.run(args, capture_output=True)
-    print(f'stdout: {proc.stdout.decode("UTF-8")}')
-    print(f'stderr: {proc.stderr.decode("UTF-8")}')
+    if print_output:
+        print(f'stdout: {proc.stdout.decode("UTF-8")}')
+        print(f'stderr: {proc.stderr.decode("UTF-8")}')
     return proc.returncode
 
 
@@ -196,7 +200,8 @@ class TestProjectCustomFields(unittest.TestCase):
         self.assertEqual(0, run_cxflow(self.config.data['cx-flow']['version'],
                                        self.cx_flow_config,
                                        project_name,
-                                       extra_args))
+                                       extra_args,
+                                       self.config.print_cx_flow_output()))
         self.project_id = self.get_project(project_name)
         self.assertIsNotNone(self.project_id)
         project = self.projects_api.get_project_details_by_id(self.project_id)
