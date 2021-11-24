@@ -118,41 +118,34 @@ class TestProjectCustomFields(unittest.TestCase):
 
     def test_cmdline(self):
 
-        project_name = self.random_string(10)
-        project_id = self.get_project(project_name)
-        self.assertIsNone(project_id)
-        extra_args = ['--f=.', '--app=App']
-        expected = {}
-        for custom_field in self.custom_fields:
-            value = self.random_string(10)
-            expected[custom_field.name] = value
-            extra_args.append(f'--project-custom-field={custom_field.name}:{value}')
-
-        self.common(project_name, extra_args, expected)
+        self.cmdline_common(False, False)
 
     def test_cmdline_project_exists(self):
 
-        project_name = self.random_string(10)
-        project_id, expected = self.create_project(project_name, '/CxServer')
-        extra_args = ['--f=.', '--app=App']
-        for custom_field in self.custom_fields:
-            value = self.random_string(10)
-            extra_args.append(f'--project-custom-field={custom_field.name}:{value}')
-
-        self.common(project_name, extra_args, expected)
+        self.cmdline_common(True, False)
 
     def test_cmdline_project_exists_settings_override(self):
 
+        self.cmdline_common(True, True)
+
+    def cmdline_common(self, create_project, override_settings):
+
         project_name = self.random_string(10)
-        project_id, junk = self.create_project(project_name, '/CxServer')
+        if create_project:
+            project_id, expected = self.create_project(project_name, '/CxServer')
+        else:
+            project_id = self.get_project(project_name)
+            self.assertIsNone(project_id)
         extra_args = ['--f=.', '--app=App']
-        expected = {}
+        if not create_project or override_settings:
+            expected = {}
         for custom_field in self.custom_fields:
             value = self.random_string(10)
-            expected[custom_field.name] = value
+            if not create_project or override_settings:
+                expected[custom_field.name] = value
             extra_args.append(f'--project-custom-field={custom_field.name}:{value}')
 
-        self.common(project_name, extra_args, expected, True)
+        self.common(project_name, extra_args, expected, override_settings)
 
     def test_config_as_code(self):
 
