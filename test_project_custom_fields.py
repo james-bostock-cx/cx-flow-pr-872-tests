@@ -149,11 +149,27 @@ class TestProjectCustomFields(unittest.TestCase):
 
     def test_config_as_code(self):
 
+        self.config_as_code_common(False, False)
+
+    def test_config_as_code_project_exists(self):
+
+        self.config_as_code_common(True, False)
+
+    def test_config_as_code_project_exists_settings_override(self):
+
+        self.config_as_code_common(True, True)
+
+    def config_as_code_common(self, create_project, override_settings):
+
         project_name = self.random_string(10)
-        project_id = self.get_project(project_name)
-        self.assertIsNone(project_id)
+        if create_project:
+            project_id, expected = self.create_project(project_name, '/CxServer')
+        else:
+            project_id = self.get_project(project_name)
+            self.assertIsNone(project_id)
         extra_args = ['--f=.', '--app=App']
-        expected = {}
+        if not create_project or override_settings:
+            expected = {}
         config = {
             'version': 1.0,
             'customFields': {
@@ -162,13 +178,14 @@ class TestProjectCustomFields(unittest.TestCase):
         tmp = []
         for custom_field in self.custom_fields:
             value = self.random_string(10)
-            expected[custom_field.name] = value
+            if not create_project or override_settings:
+                expected[custom_field.name] = value
             config['customFields'][custom_field.name] = value
 
         with open('cx.config', 'w') as f:
             json.dump(config, f)
 
-        self.common(project_name, extra_args, expected)
+        self.common(project_name, extra_args, expected, override_settings)
 
     def common(self, project_name, extra_args, expected, settings_override=False):
 

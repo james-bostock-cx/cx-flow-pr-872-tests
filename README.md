@@ -24,6 +24,7 @@ expectation is that the project's custom fields are set to the
 provided values.
 
 - Test using command line options
+- Test using config-as-code
 
 ## Project Exists and Override Specified
 
@@ -33,6 +34,7 @@ overridden. The expectation is that the project's custom fields are
 not set to the provided values.
 
 - Test using command line options
+- Test using config-as-code
 
 # Configuration
 
